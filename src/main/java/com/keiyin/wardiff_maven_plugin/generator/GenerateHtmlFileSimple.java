@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -33,9 +34,17 @@ public class GenerateHtmlFileSimple extends DiffGeneratorDecorator{
 	
 	public void generateDiffHtmlFile(ClassLoader classLoader, String originalFilePath, String revisedFilePath,
 			String targetFilePath, String fileName) throws IOException {
+		
+			List<String> original = new ArrayList<>();
+			List<String> revised = new ArrayList<>();
 			
-			List<String> original = Files.readAllLines(new File(originalFilePath).toPath(), StandardCharsets.ISO_8859_1);
-			List<String> revised = Files.readAllLines(new File(revisedFilePath).toPath(), StandardCharsets.ISO_8859_1);
+			File originalFile = new File(originalFilePath);
+			File revisedFile = new File(revisedFilePath);
+			
+			if(originalFile.exists()) 
+				original = Files.readAllLines(originalFile.toPath(), StandardCharsets.ISO_8859_1);
+			if(revisedFile.exists())
+				revised = Files.readAllLines(revisedFile.toPath(), StandardCharsets.ISO_8859_1);
 			
 			String deletion = "<span style=\"background-color: #FB504B\">${text}</span>";
 			String insertion = "<span style=\"background-color: #45EA85\">${text}</span>";
@@ -103,7 +112,7 @@ public class GenerateHtmlFileSimple extends DiffGeneratorDecorator{
 			String output = out1.replace("${right}", right);
 			
 			// Write the HTML file to the disk
-			FileUtils.write(new File(targetFilePath, fileName), output, "utf-8");
+			FileUtils.write(new File(targetFilePath, fileName + ".html"), output, "utf-8");
 		
 	}
 }

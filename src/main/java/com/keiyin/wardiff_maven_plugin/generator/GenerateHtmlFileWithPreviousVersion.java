@@ -9,10 +9,12 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
-public class GenerateHtmlFile extends DiffGeneratorDecorator {
+public class GenerateHtmlFileWithPreviousVersion extends DiffGeneratorDecorator {
+	private final String revisedPreviousVersionFilePath;
 
-	public GenerateHtmlFile(DiffGenerator diffGenerator) {
+	public GenerateHtmlFileWithPreviousVersion(DiffGenerator diffGenerator, String revisedPreviousVersionFilePath) {
 		super(diffGenerator);
+		this.revisedPreviousVersionFilePath = revisedPreviousVersionFilePath;
 	}
 
 	@Override
@@ -21,11 +23,6 @@ public class GenerateHtmlFile extends DiffGeneratorDecorator {
 		super.generate(classLoader, originalFilePath, revisedFilePath, targetFilePath, fileName);
 		generateDiffHtmlFile(classLoader, originalFilePath, revisedFilePath, targetFilePath, fileName);
 	}
-	
-	
-	// =======================================================================================
-	// Logic
-	// =======================================================================================
 
 	public void generateDiffHtmlFile(ClassLoader classLoader, String originalFilePath, String revisedFilePath,
 			String targetFilePath, String fileName) throws IOException {
@@ -33,12 +30,18 @@ public class GenerateHtmlFile extends DiffGeneratorDecorator {
 		File htmlTargetFilePathFile = new File(new File(targetFilePath), "html");
 		File htmlTargetFilePathFileWithFileName = new File(htmlTargetFilePathFile, fileName);
 
-		List<String> difString = DiffGeneratorUtils.diffString(originalFilePath, revisedFilePath);
-		
+		File originalFile = new File(originalFilePath);
+		File revisedFile = new File(revisedFilePath);
+		File revisedPreviousVersionFile = new File(revisedPreviousVersionFilePath);
+
+		List<String> difString = DiffGeneratorUtils.diffString(revisedFilePath, revisedPreviousVersionFilePath,
+				revisedFile.getName() + "_dependency", revisedPreviousVersionFile.getName() + "_previous_version");
+		difString.addAll(DiffGeneratorUtils.diffString(originalFilePath, revisedFilePath));
+
 		// Generate diff HTML file and write to disk.
 		generateDiffHtml(difString, htmlTargetFilePathFileWithFileName.getPath(), classLoader);
 	}
-	
+
 	public static void generateDiffHtml(List<String> diffString, String htmlPath, ClassLoader classLoader)
 			throws IOException {
 		StringBuilder builder = new StringBuilder();

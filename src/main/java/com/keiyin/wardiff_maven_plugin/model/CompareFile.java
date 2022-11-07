@@ -3,6 +3,8 @@ package com.keiyin.wardiff_maven_plugin.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.maven.artifact.Artifact;
+
 public class CompareFile {
 
 	public static final String[] DEFAULT_INCLUDES = new String[] { "**/**" };
@@ -14,6 +16,8 @@ public class CompareFile {
 	private String groupId;
 
 	private String artifactId;
+	
+	private Artifact artifact;
 
 	private String[] includes = DEFAULT_INCLUDES;
 
@@ -108,5 +112,13 @@ public class CompareFile {
 			}
 			return result.toArray(new String[result.size()]);
 		}
+	}
+
+	public Artifact getArtifact() {
+		return artifact;
+	}
+
+	public void setArtifact(Artifact artifact) {
+		this.artifact = artifact;
 	}
 }
