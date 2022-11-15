@@ -6,14 +6,13 @@ import java.io.IOException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 
-import com.keiyin.wardiff_maven_plugin.generator.BaseDiffGenerator;
-import com.keiyin.wardiff_maven_plugin.generator.DiffGenerator;
-import com.keiyin.wardiff_maven_plugin.generator.DiffGeneratorUtils;
-import com.keiyin.wardiff_maven_plugin.generator.GenerateHtmlFile;
-import com.keiyin.wardiff_maven_plugin.generator.GenerateHtmlFileSimple;
-import com.keiyin.wardiff_maven_plugin.generator.GenerateUnifiedFile;
+import com.keiyin.wardiff_maven_plugin.diff.generator.BasicDiffGenerator;
+import com.keiyin.wardiff_maven_plugin.diff.generator.DiffGenerator;
+import com.keiyin.wardiff_maven_plugin.diff.generator.GenerateHtmlFile;
+import com.keiyin.wardiff_maven_plugin.diff.generator.GenerateUnifiedFile;
 import com.keiyin.wardiff_maven_plugin.model.CompareFile;
 import com.keiyin.wardiff_maven_plugin.model.PathSet;
+import com.keiyin.wardiff_maven_plugin.utils.DiffGeneratorUtils;
 
 public class CompareFileTask implements Task {
 
@@ -36,14 +35,14 @@ public class CompareFileTask implements Task {
 	public void performTask() throws MojoExecutionException {
 
 		// Get the file path (with the file name) that you want to compare
-		PathSet checkFile = DiffGeneratorUtils.getFilesToIncludes(revisedDirectory, compareFile.getIncludes(),
+		PathSet checkFile = DiffGeneratorUtils.getFilesToIncludes(originalDirectory, compareFile.getIncludes(),
 				compareFile.getExcludes(), false);
 
 		// Where is the extracted war file?
 		// Normally the war plugin will extract it to the
 		// target/war/work/{groupId}/{artifactId}
 		log.info("The following files are " + compareFile.getId()
-				+ "war dependency that has been overwritten by the local");
+				+ " war dependency that has been overwritten by the local");
 		log.info("-------------------------------------------------------------------------------------------");
 		int index = 1;
 
@@ -69,7 +68,7 @@ public class CompareFileTask implements Task {
 
 							// Decorator pattern
 							DiffGenerator diffGenerator = new GenerateUnifiedFile(
-									new GenerateHtmlFile(new GenerateHtmlFileSimple(new BaseDiffGenerator())));
+									new GenerateHtmlFile(new BasicDiffGenerator()));
 
 							diffGenerator.generate(getClass().getClassLoader(), fileLocal.getPath(), fileDepd.getPath(),
 									targetDirectory.getPath(), fileName);

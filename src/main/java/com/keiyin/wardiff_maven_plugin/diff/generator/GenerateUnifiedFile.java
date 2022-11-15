@@ -1,10 +1,12 @@
-package com.keiyin.wardiff_maven_plugin.generator;
+package com.keiyin.wardiff_maven_plugin.diff.generator;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+
+import com.keiyin.wardiff_maven_plugin.utils.DiffGeneratorUtils;
 
 public class GenerateUnifiedFile extends DiffGeneratorDecorator{
 	public GenerateUnifiedFile(DiffGenerator diffGenerator) {

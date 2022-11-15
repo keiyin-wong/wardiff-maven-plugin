@@ -1,4 +1,6 @@
 com.keiyin.wardiff_maven_plugin
-com.keiyin.wardiff_maven_plugin.generator
+com.keiyin.wardiff_maven_plugin.diff.generator
+com.keiyin.wardiff_maven_plugin.diff.generator.withprevious
 com.keiyin.wardiff_maven_plugin.model
 com.keiyin.wardiff_maven_plugin.task
+com.keiyin.wardiff_maven_plugin.utils

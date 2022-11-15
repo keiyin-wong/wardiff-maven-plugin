@@ -1,4 +1,4 @@
-package com.keiyin.wardiff_maven_plugin.generator;
+package com.keiyin.wardiff_maven_plugin.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +12,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.codehaus.plexus.util.DirectoryScanner;
 
+import com.keiyin.wardiff_maven_plugin.model.InvalidCompareFileConfigurationException;
 import com.keiyin.wardiff_maven_plugin.model.PathSet;
 
 import difflib.DiffUtils;
@@ -215,10 +216,11 @@ public class DiffGeneratorUtils {
 	 * @param excludes           the excludes
 	 * @param includeDirectories include directories yes or not.
 	 * @return the files to copy
+	 * @throws InvalidCompareFileConfigurationException 
 	 */
 	// CHECKSTYLE_OFF: LineLength
 	public static PathSet getFilesToIncludes(File baseDir, String[] includes, String[] excludes,
-			boolean includeDirectories)
+			boolean includeDirectories) throws InvalidCompareFileConfigurationException
 	// CHECKSTYLE_ON: LineLength
 	{
 		final DirectoryScanner scanner = new DirectoryScanner();
@@ -232,8 +234,7 @@ public class DiffGeneratorUtils {
 		if (includes != null && includes.length > 0) {
 			scanner.setIncludes(includes);
 		} else {
-			// String[] defaultIncludes = { "**/**" };
-			// scanner.setIncludes(defaultIncludes);
+			throw new InvalidCompareFileConfigurationException("Please provides includes");
 		}
 
 		scanner.scan();

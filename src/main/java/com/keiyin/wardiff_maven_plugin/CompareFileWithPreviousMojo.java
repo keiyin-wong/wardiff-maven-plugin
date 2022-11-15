@@ -60,12 +60,15 @@ public class CompareFileWithPreviousMojo extends AbstractMojo {
 		for (CompareFile compareFile : compareFiles) {
 			if (compareWithPreviousVersion != null) {
 				test(compareFile);
-				Task task = new CompareFileWithPreviousVersion(webappDirectory,
+				Task task = new CompareFileWithPreviousVersion(
+						webappDirectory,
 						new File(workDirectory, compareFile.getFilePath()),
 						new File(workDirectory, compareFile.getFilePath() + "-" + compareWithPreviousVersion),
 						new File(new File(targetDirectory, "differ"),
-								"local_vs_" + compareFile.getId() + "_vs_" + compareWithPreviousVersion),
-						compareFile, compareWithPreviousVersion, getLog());
+								"local_overwrites_" + compareFile.getId() + "_diff_" + compareWithPreviousVersion),
+						compareFile, 
+						compareWithPreviousVersion, 
+						getLog());
 				task.performTask();
 			} else {
 				throw new InvalidCompareFileConfigurationException(

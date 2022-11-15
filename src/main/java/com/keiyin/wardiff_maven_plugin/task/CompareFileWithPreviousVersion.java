@@ -6,28 +6,27 @@ import java.io.IOException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 
-import com.keiyin.wardiff_maven_plugin.generator.BaseDiffGenerator;
-import com.keiyin.wardiff_maven_plugin.generator.DiffGenerator;
-import com.keiyin.wardiff_maven_plugin.generator.DiffGeneratorUtils;
-import com.keiyin.wardiff_maven_plugin.generator.GenerateHtmlFileWithPreviousVersion;
+import com.keiyin.wardiff_maven_plugin.diff.generator.withprevious.GenerateHtmlFileWithPreviousVersion;
 import com.keiyin.wardiff_maven_plugin.model.CompareFile;
 import com.keiyin.wardiff_maven_plugin.model.PathSet;
+import com.keiyin.wardiff_maven_plugin.utils.DiffGeneratorUtils;
 
 public class CompareFileWithPreviousVersion implements Task {
-	private File originalDirectory;
-	private File revisedDirectory;
-	private File revisedPreviosDirectory;
+	private File localDirectory;
+	private File dependencyDirectory;
+	private File dependencyPreviosDirectory;
 	private File targetDirectory;
 	private CompareFile compareFile;
 	private String previousVersion;
 	private Log log;
 
-	public CompareFileWithPreviousVersion(File originalDirectory, File revisedDirectory, File revisedPreviosDirectory,
-			File targetDirectory, CompareFile compareFiles, String previousVersion, Log log) {
+	public CompareFileWithPreviousVersion(File localDirectory, File dependencyDirectory,
+			File dependencyPreviosDirectory, File targetDirectory, CompareFile compareFiles, String previousVersion,
+			Log log) {
 		super();
-		this.revisedDirectory = revisedDirectory;
-		this.originalDirectory = originalDirectory;
-		this.revisedPreviosDirectory = revisedPreviosDirectory;
+		this.localDirectory = localDirectory;
+		this.dependencyDirectory = dependencyDirectory;
+		this.dependencyPreviosDirectory = dependencyPreviosDirectory;
 		this.compareFile = compareFiles;
 		this.targetDirectory = targetDirectory;
 		this.previousVersion = previousVersion;
@@ -36,45 +35,46 @@ public class CompareFileWithPreviousVersion implements Task {
 
 	@Override
 	public void performTask() throws MojoExecutionException {
-		PathSet checkFile = DiffGeneratorUtils.getFilesToIncludes(revisedDirectory, compareFile.getIncludes(),
+		PathSet checkFile = DiffGeneratorUtils.getFilesToIncludes(dependencyDirectory, compareFile.getIncludes(),
 				compareFile.getExcludes(), false);
 
 		log.info("Comparing files with " + compareFile.getId() + " that differ from the previous version.");
 
 		log.info("The following files are " + compareFile.getId()
 				+ " war dependency (and also differ from previous version " + previousVersion
-				+ " ) that has been overwritten by the local");
+				+ ") that has been overwritten by the local");
 		log.info("-------------------------------------------------------------------------------------------");
 
+		// For the file path that need to be compared
 		int index = 1;
 		for (String fileName : checkFile.paths()) {
-			// The local project file
-			final File fileLocal = new File(originalDirectory.getPath(), fileName);
-			// The extracted war dependency file
-			final File fileRevised = new File(revisedDirectory, fileName);
+			final File fileDependency = new File(dependencyDirectory.getPath(), fileName);
+			final File fileLocal = new File(localDirectory, fileName);
+			final File fileDependencyPrevious = new File(dependencyPreviosDirectory, fileName);
 
-			final File fileRevisedPrevious = new File(revisedPreviosDirectory, fileName);
-
-			// Check the revised and revisedPrevious file that is different
-			// And the local and revised file that is different
 			try {
-				if (!fileRevised.isDirectory() && !fileRevisedPrevious.isDirectory()
-						&& !DiffGeneratorUtils.isTwoFileSame(fileRevised, fileRevisedPrevious)
-						&& !DiffGeneratorUtils.isTwoFileSame(fileLocal, fileRevised)) {
+				// Check whether the previous dependency version and current dependency is same
+				if (!fileLocal.isDirectory() && !fileDependencyPrevious.isDirectory()
+						&& !DiffGeneratorUtils.isTwoFileSame(fileDependency, fileDependencyPrevious)
+						&& !DiffGeneratorUtils.isTwoFileSame(fileDependency, fileLocal)) {
+					// Check whether the file is binary
 					if (DiffGeneratorUtils.isBinaryFile(fileName)) {
 						log.info(index + ". Binary file " + fileName + " differ.");
 					} else {
+						// If the is not binary file, then do comparison
 						log.info(index + ". File " + fileName + " differ.");
 						String targetFileName = fileName.replace("/", "_");
 
-						DiffGenerator diffGenerator = new BaseDiffGenerator();
-
-						// Add a fileRevisedPreviousaPath to the Diff generator
-						diffGenerator = new GenerateHtmlFileWithPreviousVersion(diffGenerator,
-								fileRevisedPrevious.getPath());
-						diffGenerator.generate(getClass().getClassLoader(), fileLocal.getPath(), fileRevised.getPath(),
-								targetDirectory.getPath(), targetFileName);
-
+						GenerateHtmlFileWithPreviousVersion generateHtmlFileWithPreviousVersion = new GenerateHtmlFileWithPreviousVersion(
+								fileLocal.getPath(), 
+								fileDependency.getPath(), 
+								fileDependencyPrevious.getPath(), 
+								targetDirectory.getPath(), 
+								targetFileName,
+								fileLocal.getName() + "_local", 
+								fileLocal.getName() + "_dependency", 
+								fileLocal.getName() + "_dependency_previous_version");
+						generateHtmlFileWithPreviousVersion.generateDiffHtmlFileWithPreviousVersion();
 					}
 				}
 			} catch (IOException e) {
@@ -86,19 +86,19 @@ public class CompareFileWithPreviousVersion implements Task {
 	}
 
 	public File getRevisedDirectory() {
-		return revisedDirectory;
+		return localDirectory;
 	}
 
 	public File getRevisedPreviosDirectory() {
-		return revisedPreviosDirectory;
+		return dependencyPreviosDirectory;
 	}
 
 	public void setRevisedPreviosDirectory(File revisedPreviosDirectory) {
-		this.revisedPreviosDirectory = revisedPreviosDirectory;
+		this.dependencyPreviosDirectory = revisedPreviosDirectory;
 	}
 
 	public File getOriginalDirectory() {
-		return originalDirectory;
+		return dependencyDirectory;
 	}
 
 	public File getTargetDirectory() {
@@ -114,11 +114,11 @@ public class CompareFileWithPreviousVersion implements Task {
 	}
 
 	public void setRevisedDirectory(File revisedDirectory) {
-		this.revisedDirectory = revisedDirectory;
+		this.localDirectory = revisedDirectory;
 	}
 
 	public void setOriginalDirectory(File originalDirectory) {
-		this.originalDirectory = originalDirectory;
+		this.dependencyDirectory = originalDirectory;
 	}
 
 	public void setTargetDirectory(File targetDirectory) {

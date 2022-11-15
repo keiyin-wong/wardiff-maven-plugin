@@ -37,10 +37,10 @@ public class CompareFileMojo extends AbstractMojo {
 
 	@Parameter(defaultValue = "${project.basedir}", required = true)
 	private File homeDirectory;
-	
+
 	@Parameter(defaultValue = "${settings.localRepository}")
 	private File localMavenRepo;
-	
+
 	@Parameter
 	private String compareWithPreviousVersion;
 
@@ -49,15 +49,13 @@ public class CompareFileMojo extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		for(CompareFile compareFile : compareFiles) {
-			Task task = new CompareFileTask(
-					webappDirectory,
-					new File(workDirectory, compareFile.getFilePath()) , 
-					new File(new File(targetDirectory, "differ"), "local_vs_" + compareFile.getId()),
-					compareFile, 
-					getLog()
-			);
+		for (CompareFile compareFile : compareFiles) {
+			Task task = new CompareFileTask(new File(workDirectory, compareFile.getFilePath()), webappDirectory, 
+					new File(new File(targetDirectory, "differ"), "local_overwrites_" + compareFile.getId()),
+					compareFile, getLog());
 			task.performTask();
 		}
 	}
+
+
 }

@@ -1,4 +1,4 @@
-package com.keiyin.wardiff_maven_plugin.generator;
+package com.keiyin.wardiff_maven_plugin.diff.generator;
 
 import java.io.IOException;
 

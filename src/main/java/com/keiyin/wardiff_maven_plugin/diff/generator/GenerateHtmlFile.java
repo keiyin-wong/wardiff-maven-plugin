@@ -1,4 +1,4 @@
-package com.keiyin.wardiff_maven_plugin.generator;
+package com.keiyin.wardiff_maven_plugin.diff.generator;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,12 +9,13 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
-public class GenerateHtmlFileWithPreviousVersion extends DiffGeneratorDecorator {
-	private final String revisedPreviousVersionFilePath;
+import com.keiyin.wardiff_maven_plugin.utils.CopyHtmlFileAssetUtil;
+import com.keiyin.wardiff_maven_plugin.utils.DiffGeneratorUtils;
 
-	public GenerateHtmlFileWithPreviousVersion(DiffGenerator diffGenerator, String revisedPreviousVersionFilePath) {
+public class GenerateHtmlFile extends DiffGeneratorDecorator {
+
+	public GenerateHtmlFile(DiffGenerator diffGenerator) {
 		super(diffGenerator);
-		this.revisedPreviousVersionFilePath = revisedPreviousVersionFilePath;
 	}
 
 	@Override
@@ -24,22 +25,21 @@ public class GenerateHtmlFileWithPreviousVersion extends DiffGeneratorDecorator 
 		generateDiffHtmlFile(classLoader, originalFilePath, revisedFilePath, targetFilePath, fileName);
 	}
 
+	// =======================================================================================
+	// Logic
+	// =======================================================================================
+
 	public void generateDiffHtmlFile(ClassLoader classLoader, String originalFilePath, String revisedFilePath,
 			String targetFilePath, String fileName) throws IOException {
 
 		File htmlTargetFilePathFile = new File(new File(targetFilePath), "html");
 		File htmlTargetFilePathFileWithFileName = new File(htmlTargetFilePathFile, fileName);
 
-		File originalFile = new File(originalFilePath);
-		File revisedFile = new File(revisedFilePath);
-		File revisedPreviousVersionFile = new File(revisedPreviousVersionFilePath);
-
-		List<String> difString = DiffGeneratorUtils.diffString(revisedFilePath, revisedPreviousVersionFilePath,
-				revisedFile.getName() + "_dependency", revisedPreviousVersionFile.getName() + "_previous_version");
-		difString.addAll(DiffGeneratorUtils.diffString(originalFilePath, revisedFilePath));
+		List<String> difString = DiffGeneratorUtils.diffString(originalFilePath, revisedFilePath);
 
 		// Generate diff HTML file and write to disk.
 		generateDiffHtml(difString, htmlTargetFilePathFileWithFileName.getPath(), classLoader);
+		new CopyHtmlFileAssetUtil(htmlTargetFilePathFile).copyHtmlDiffAssets();
 	}
 
 	public static void generateDiffHtml(List<String> diffString, String htmlPath, ClassLoader classLoader)
